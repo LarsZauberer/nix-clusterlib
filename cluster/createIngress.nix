@@ -11,9 +11,6 @@
   basicAuth ? null,
   clusterIssuer ? "main-cluster-issuer",
 }:
-let
-  basicAuthName = name + "-basic-auth";
-in
 {
   ingresses.${
     lib.concatStrings [
@@ -28,7 +25,7 @@ in
           "cert-manager.io/cluster-issuer" = clusterIssuer;
         }
         (lib.mkIf (basicAuth != null) {
-          "traefik.ingress.kubernetes.io/router.middlewares" = "${namespace}-${basicAuthName}@kubernetescrd";
+          "traefik.ingress.kubernetes.io/router.middlewares" = "${namespace}-${basicAuth}@kubernetescrd";
         })
       ];
       spec = {
@@ -58,15 +55,9 @@ in
     };
 }
 // lib.optionalAttrs (basicAuth != null) {
-  # htpasswd file, resolved from agenix. Traefik's BasicAuth reads the "users"
-  # key; stringData takes the plaintext htpasswd (k8s base64-encodes it).
-  secrets.${basicAuthName} = {
+  middlewares.${basicAuth} = {
     metadata.namespace = namespace;
-    stringData.users = "ref+file:///run/agenix/" + basicAuth;
-  };
-  middlewares.${basicAuthName} = {
-    metadata.namespace = namespace;
-    spec.basicAuth.secret = basicAuthName;
+    spec.basicAuth.secret = basicAuth;
     # The secret includes a newline seperates list of `<username>:<special encrypted password>`
     # The key for the secret is `users`
   };
