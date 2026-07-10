@@ -1,0 +1,4 @@
+{ ... }:
+name: {
+  namespaces.${name} = { };
+}
