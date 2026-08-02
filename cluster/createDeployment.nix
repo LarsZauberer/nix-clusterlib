@@ -131,6 +131,9 @@ in
                     httpGet = {
                       path = livenessProbe.path;
                       port = livenessProbe.port;
+                    }
+                    // lib.optionalAttrs (livenessProbe ? headers) {
+                      httpHeaders = livenessProbe.headers;
                     };
                     failureThreshold = livenessProbe.fails or 30;
                     periodSeconds = livenessProbe.period or 10;
@@ -143,6 +146,9 @@ in
                     httpGet = {
                       path = startupProbe.path;
                       port = startupProbe.port;
+                    }
+                    // lib.optionalAttrs (startupProbe ? headers) {
+                      httpHeaders = startupProbe.headers;
                     };
                     failureThreshold = startupProbe.fails or 30;
                     periodSeconds = startupProbe.period or 10;
