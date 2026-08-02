@@ -18,6 +18,7 @@
   resources ? null,
   livenessProbe ? null,
   startupProbe ? null,
+  securityContext ? null,
   interactive ? false,
 }:
 let
@@ -123,6 +124,7 @@ in
               stdin = interactive;
               tty = interactive;
               resources = if isNull resources then { } else resources;
+              securityContext = if isNull securityContext then { } else securityContext;
               livenessProbe =
                 if isNull livenessProbe then
                   null
