@@ -36,31 +36,25 @@ let
     persistentVolumeClaim.claimName = x.claimName or (x.name + "-pvc");
   };
 
-  secretVolume =
-    x:
-    {
-      name = x.name;
-      secret =
-        {
-          secretName = x.secretName or x.name;
-        }
-        // lib.optionalAttrs (x ? items) { inherit (x) items; }
-        // lib.optionalAttrs (x ? defaultMode) { inherit (x) defaultMode; }
-        // lib.optionalAttrs (x ? optional) { inherit (x) optional; };
-    };
+  secretVolume = x: {
+    name = x.name;
+    secret = {
+      secretName = x.secretName or x.name;
+    }
+    // lib.optionalAttrs (x ? items) { inherit (x) items; }
+    // lib.optionalAttrs (x ? defaultMode) { inherit (x) defaultMode; }
+    // lib.optionalAttrs (x ? optional) { inherit (x) optional; };
+  };
 
-  configMapVolume =
-    x:
-    {
-      name = x.name;
-      configMap =
-        {
-          name = x.configMapName or x.name;
-        }
-        // lib.optionalAttrs (x ? items) { inherit (x) items; }
-        // lib.optionalAttrs (x ? defaultMode) { inherit (x) defaultMode; }
-        // lib.optionalAttrs (x ? optional) { inherit (x) optional; };
-    };
+  configMapVolume = x: {
+    name = x.name;
+    configMap = {
+      name = x.configMapName or x.name;
+    }
+    // lib.optionalAttrs (x ? items) { inherit (x) items; }
+    // lib.optionalAttrs (x ? defaultMode) { inherit (x) defaultMode; }
+    // lib.optionalAttrs (x ? optional) { inherit (x) optional; };
+  };
 in
 {
   deployments.${name} = {
@@ -114,10 +108,14 @@ in
                   }) (builtins.attrNames env);
                   secretEnvs = lib.map (key: {
                     name = key;
-                    valueFrom.secretKeyRef = {
-                      name = envSecrets.${key};
-                      key = "secret";
-                    };
+                    valueFrom.secretKeyRef =
+                      if builtins.isString envSecrets.${key} then
+                        {
+                          name = envSecrets.${key};
+                          key = "secret";
+                        }
+                      else
+                        envSecrets.${key};
                   }) (builtins.attrNames envSecrets);
                 in
                 simpleEnvs ++ secretEnvs;
